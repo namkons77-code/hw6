@@ -36,12 +36,90 @@ const inferSchoolKind = (kind = "", name = "") => {
   return k || "고등학교";
 };
 
+// 초기 접속 위치 상태 산출 (1순위: 이전 저장 위치, 2순위: 핀 고정 학교 위치 기반 추론, 3순위: 기본값)
+function getInitialLocationState() {
+  // 1순위: 사용자가 직전에 선택하여 저장된 선호 위치
+  try {
+    const saved = localStorage.getItem("user_preferred_location_v1");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.officeCode) {
+        return {
+          officeCode: parsed.officeCode,
+          district: parsed.district || "",
+          dong: parsed.dong || "",
+          locationText: parsed.locationText || "",
+          coords: parsed.coords || null,
+          hasSavedLocation: true,
+        };
+      }
+    }
+  } catch {
+    // 무시
+  }
+
+  // 2순위: 핀 고정된 학교가 있는 경우 해당 학교의 교육청/지역 정보로 초기 위치 설정
+  try {
+    const pinnedRaw = localStorage.getItem("pinned_schools_v1");
+    if (pinnedRaw) {
+      const pinned = JSON.parse(pinnedRaw);
+      if (Array.isArray(pinned) && pinned.length > 0) {
+        const first = pinned[0];
+        const officeCode = first.officeCode || "D10";
+        const office =
+          OFFICES_OF_EDUCATION.find((o) => o.code === officeCode) ||
+          OFFICES_OF_EDUCATION[0];
+        const address = first.address || first.ORG_RDNMA || "";
+        const dongMatch = address.match(/([가-힣\d]+(?:동|읍|면))/);
+        const dong = dongMatch ? dongMatch[1].replace(/[0-9]+동$/, "동") : "";
+        const district =
+          office.districts.find((d) => address.includes(d)) ||
+          office.districts[0] ||
+          "";
+        const baseDong = dong ? dong.replace(/[0-9]+동$/, "동") : "";
+        const coords =
+          (baseDong && DONG_COORDINATES[baseDong]) || {
+            lat: office.lat,
+            lon: office.lon,
+          };
+
+        const locText = [office.region, district, dong].filter(Boolean).join(" ");
+        return {
+          officeCode: office.code,
+          district,
+          dong,
+          locationText: locText,
+          coords,
+          hasSavedLocation: true,
+        };
+      }
+    }
+  } catch {
+    // 무시
+  }
+
+  // 3순위: 신규 접속자 (위치 감지 필요)
+  return {
+    officeCode: "B10",
+    district: "",
+    dong: "",
+    locationText: "접속 위치 확인 중...",
+    coords: null,
+    hasSavedLocation: false,
+  };
+}
+
 function App() {
-  // 위치 표시 텍스트 및 선택된 위치 상태 (시/도, 시/군/구, 동/읍/면)
-  const [locationText, setLocationText] = useState("접속 위치 확인 중...");
-  const [selectedOfficeCode, setSelectedOfficeCode] = useState("B10");
-  const [selectedDistrict, setSelectedDistrict] = useState("");
-  const [selectedDong, setSelectedDong] = useState("");
+  // 초기 위치 상태 (이전 접속/선택 위치 복원)
+  const [initialLocation] = useState(() => getInitialLocationState());
+  const [locationText, setLocationText] = useState(initialLocation.locationText);
+  const [selectedOfficeCode, setSelectedOfficeCode] = useState(
+    initialLocation.officeCode,
+  );
+  const [selectedDistrict, setSelectedDistrict] = useState(
+    initialLocation.district,
+  );
+  const [selectedDong, setSelectedDong] = useState(initialLocation.dong);
   const [availableDongs, setAvailableDongs] = useState([]);
 
   // 상단 고정 학교 목록 상태 (위치가 바뀌어도 영구 고정 유지)
@@ -298,33 +376,9 @@ function App() {
   );
 
   // 일반적인 접속 위치 감지 및 식단 조회 함수 (전국 표준 로직)
-  const detectLocationAndFetch = useCallback(
-    async (isManualRefresh = false) => {
-      try {
-        let geoResult = null;
-
-        // 수동 새로고침이 아닌 경우 세션 캐시 확인 (불필요한 반복 호출 방지)
-        if (!isManualRefresh) {
-          try {
-            const cached = sessionStorage.getItem("user_geo_cache");
-            if (cached) {
-              geoResult = JSON.parse(cached);
-            }
-          } catch {
-            // 캐시 파싱 에러 무시
-          }
-        }
-
-        // 캐시가 없거나 수동 재확인인 경우 일반적인 위치 감지 실행
-        if (!geoResult) {
-          geoResult = await getGeneralLocation();
-          try {
-            sessionStorage.setItem("user_geo_cache", JSON.stringify(geoResult));
-          } catch {
-            // 스토리지 저장 에러 무시
-          }
-        }
-
+  const detectLocationAndFetch = useCallback(async () => {
+    try {
+      const geoResult = await getGeneralLocation();
         const matchedOffice =
           geoResult.matchedOffice || OFFICES_OF_EDUCATION[0];
         const detectedDistrict =
@@ -339,6 +393,22 @@ function App() {
         setSelectedDistrict(detectedDistrict);
         setSelectedDong(detectedDong);
         setLocationText(fullLocation);
+
+        // 감지된 정상 위치를 선호 위치로 저장
+        try {
+          localStorage.setItem(
+            "user_preferred_location_v1",
+            JSON.stringify({
+              officeCode: matchedOffice.code,
+              district: detectedDistrict,
+              dong: detectedDong,
+              locationText: fullLocation,
+              coords,
+            }),
+          );
+        } catch {
+          // 스토리지 에러 무시
+        }
 
         await fetchNearbySchoolsMeals(
           matchedOffice,
@@ -396,6 +466,22 @@ function App() {
         lat: office.lat,
         lon: office.lon,
       };
+
+      // 사용자가 수동 선택한 위치를 선호 위치로 영구 저장 (다음 접속 시 즉시 로드)
+      try {
+        localStorage.setItem(
+          "user_preferred_location_v1",
+          JSON.stringify({
+            officeCode: office.code,
+            district: targetDistrict,
+            dong: targetDong,
+            locationText: fullLocation,
+            coords: targetCoords,
+          }),
+        );
+      } catch {
+        // 스토리지 에러 무시
+      }
 
       await fetchNearbySchoolsMeals(
         office,
@@ -479,13 +565,33 @@ function App() {
     [selectedOfficeCode],
   );
 
-  // 접속 시 단 1회만 일반적 위치 감지 및 식단 조회 실행
+  // 접속 시 초기 위치 식단 로드 (이전 저장 선호 위치가 있으면 즉시 로드, 신규 접속자는 위치 자동 감지)
   useEffect(() => {
     if (hasInitializedRef.current) return;
     hasInitializedRef.current = true;
 
-    detectLocationAndFetch(false);
-  }, [detectLocationAndFetch]);
+    const init = async () => {
+      if (initialLocation.hasSavedLocation) {
+        const office =
+          OFFICES_OF_EDUCATION.find((o) => o.code === initialLocation.officeCode) ||
+          OFFICES_OF_EDUCATION[0];
+        const targetCoords = initialLocation.coords || {
+          lat: office.lat,
+          lon: office.lon,
+        };
+        await fetchNearbySchoolsMeals(
+          office,
+          initialLocation.district,
+          initialLocation.dong,
+          targetCoords,
+        );
+      } else {
+        await detectLocationAndFetch();
+      }
+    };
+
+    init();
+  }, [detectLocationAndFetch, fetchNearbySchoolsMeals, initialLocation]);
 
   return (
     <div className="app-layout">
@@ -555,7 +661,7 @@ function App() {
             pinnedSchools={pinnedSchools}
             onTogglePinSchool={handleTogglePinSchool}
             onSelectLocation={handleSelectLocation}
-            onRefreshLocation={() => detectLocationAndFetch(true)}
+            onRefreshLocation={detectLocationAndFetch}
             isRefreshing={isLoading}
           />
         )}

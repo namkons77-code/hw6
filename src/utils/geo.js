@@ -60,11 +60,11 @@ export function matchOfficeOfEducation(province, lat, lon) {
 }
 
 /**
- * 브라우저 Geolocation API 호출 (일반적 표준 HTML5 위치 감지)
+ * 브라우저 Geolocation API 호출 (HTML5 고정밀 Wi-Fi/GPS 우선 감지)
  */
-export function getCurrentPosition(timeoutMs = 5000) {
+export function getCurrentPosition(timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
       reject(new Error("이 브라우저는 위치 정보(Geolocation)를 지원하지 않습니다."));
       return;
     }
@@ -73,16 +73,34 @@ export function getCurrentPosition(timeoutMs = 5000) {
       (pos) => {
         resolve({
           latitude: pos.coords.latitude,
-          longitude: pos.coords.longitude
+          longitude: pos.coords.longitude,
+          accuracy: pos.coords.accuracy
         });
       },
       (err) => {
-        reject(err);
+        // HighAccuracy 실패 시 일반 모드로 1회 자동 재시도 (데스크톱 등 Wi-Fi 미지원 환경 대비)
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            resolve({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              accuracy: pos.coords.accuracy
+            });
+          },
+          (err2) => {
+            reject(err2 || err);
+          },
+          {
+            enableHighAccuracy: false,
+            timeout: 3000,
+            maximumAge: 300000 // 5분
+          }
+        );
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true,
         timeout: timeoutMs,
-        maximumAge: 600000 // 10분 캐시
+        maximumAge: 300000 // 5분 내 캐시된 위치가 있으면 즉시 반환
       }
     );
   });
@@ -208,18 +226,52 @@ export async function reverseGeocode(lat, lon) {
  * 3. 표준 기본 위치 (전국 공통)
  */
 export async function getGeneralLocation() {
-  // 1단계: 브라우저 HTML5 위치 정보 시도
+  // 1단계: 브라우저 HTML5 위치 정보 시도 (고정밀 Wi-Fi/GPS)
   try {
-    const pos = await getCurrentPosition(4000);
+    const pos = await getCurrentPosition(8000);
     const geo = await reverseGeocode(pos.latitude, pos.longitude);
     if (geo.success && geo.province) {
       return geo;
     }
   } catch (err) {
-    console.warn("브라우저 위치 감지 불가/거부, IP 기반 위치로 대체:", err);
+    console.warn("브라우저 위치 감지 불가/지연:", err);
   }
 
-  // 2단계: IP 기반 자동 접속 위치 감지 시도 (전국 어디서나 자동 식별)
+  // 2단계: 사용자가 이전에 직접 선택했던 선호 위치 확인 (IP보다 사용자 선택 이력 우선)
+  try {
+    const saved = localStorage.getItem("user_preferred_location_v1");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.officeCode && parsed.locationText) {
+        const matchedOffice =
+          OFFICES_OF_EDUCATION.find((o) => o.code === parsed.officeCode) ||
+          OFFICES_OF_EDUCATION[0];
+        const baseDong = parsed.dong ? parsed.dong.replace(/[0-9]+동$/, "동") : "";
+        const fallbackCoords =
+          (baseDong && DONG_COORDINATES[baseDong]) || {
+            lat: matchedOffice.lat,
+            lon: matchedOffice.lon,
+          };
+        return {
+          success: true,
+          lat: parsed.coords?.lat || fallbackCoords.lat,
+          lon: parsed.coords?.lon || fallbackCoords.lon,
+          province: matchedOffice.region,
+          district: parsed.district || matchedOffice.districts[0] || "",
+          dong: parsed.dong || "",
+          rawDong: parsed.dong || "",
+          baseDong,
+          locationText: parsed.locationText,
+          matchedOffice,
+          isUserSaved: true,
+        };
+      }
+    }
+  } catch {
+    // 무시
+  }
+
+  // 3단계: IP 기반 자동 접속 위치 감지 시도 (전국 어디서나 자동 식별)
   try {
     const ipRes = await fetch("https://ipwho.is/");
     if (ipRes.ok) {
@@ -235,7 +287,7 @@ export async function getGeneralLocation() {
     console.warn("IP 위치 감지 실패:", ipErr);
   }
 
-  // 3단계: 기본값 - 전국 대표 시도교육청 (서울)
+  // 4단계: 기본값 - 전국 대표 시도교육청 (서울)
   const defaultOffice = OFFICES_OF_EDUCATION[0];
   return {
     success: false,
