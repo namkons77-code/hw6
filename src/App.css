@@ -1,0 +1,529 @@
+/* ==========================================================================
+   Antigravity School Meal Service - Optimized Stylesheet
+   ========================================================================== */
+
+/* ===== 1. 상단 사이트 헤더 ===== */
+.app-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-container {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.brand-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: #4f46e5;
+  filter: drop-shadow(0 1px 2px rgba(79, 70, 229, 0.2));
+}
+
+.brand-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.03em;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* ===== 2. 메인 레이아웃 ===== */
+.app-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f1f5f9;
+}
+
+.main-content {
+  flex: 1;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ===== 2. 에러 및 로딩 진행 상태 ===== */
+.error-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecdd3;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+}
+
+.progress-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 0.5rem;
+  background-color: #f1f5f9;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  border-radius: 9999px;
+  transition: width 0.2s ease-out;
+}
+
+/* ===== 3. 접속 위치 헤더 ===== */
+.dish-only-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.location-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.location-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+
+/* 접속위치 앞 위치 선택 메뉴 */
+.location-select-menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #ffffff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.55rem;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.location-menu-label {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: #4338ca;
+  white-space: nowrap;
+}
+
+.location-dropdown {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.location-dropdown:hover {
+  background: #f1f5f9;
+  border-color: #6366f1;
+}
+
+.location-dropdown:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.location-detected-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.location-dong-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #eef2ff;
+  color: #4338ca;
+  border: 1px solid #c7d2fe;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.location-address-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: -0.02em;
+}
+
+.location-right {
+  display: flex;
+  align-items: center;
+}
+
+.btn-recheck-location {
+  display: inline-flex;
+  align-items: center;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+}
+
+.btn-recheck-location:hover:not(:disabled) {
+  background: #4338ca;
+  box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+}
+
+.btn-recheck-location:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== 4. 날짜 필터 및 검색창 (1줄 고정 가로 배치) ===== */
+.averages-filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+}
+
+.date-filter-group {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.35rem;
+  background: #ffffff;
+  padding: 0.35rem;
+  border-radius: 0.65rem;
+  border: 1px solid #e2e8f0;
+  flex: 1 1 auto;
+  min-width: 0;
+  scrollbar-width: thin;
+}
+
+.filter-kind-btn {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #64748b;
+  border-radius: 0.45rem;
+  transition: all 0.2s;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.filter-kind-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.filter-kind-btn.active {
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.25);
+}
+
+/* 오늘 날짜 버튼 강조 */
+.filter-kind-btn.btn-today {
+  color: #4338ca;
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  font-weight: 700;
+}
+
+.filter-kind-btn.btn-today.active {
+  background: #4338ca;
+  color: #ffffff;
+  border-color: #3730a3;
+  box-shadow: 0 2px 6px rgba(67, 56, 202, 0.35);
+}
+
+/* 검색창 영역 */
+.search-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.search-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  width: 1rem;
+  height: 1rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.card-search-field {
+  padding: 0.45rem 0.75rem 0.45rem 2.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  font-size: 0.825rem;
+  outline: none;
+  width: 220px;
+  background-color: #ffffff;
+  transition: all 0.2s;
+}
+
+.card-search-field:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+/* ===== 5. 3열 그리드 레이아웃 (1열 초등, 2열 중학, 3열 고등) ===== */
+.three-columns-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .three-columns-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.school-level-column {
+  border-radius: 1rem;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.column-elementary {
+  background: #fefce8;
+  border-color: #fef08a;
+}
+
+.column-middle {
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.column-high {
+  background: #fef2f2;
+  border-color: #fee2e2;
+}
+
+.column-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.column-empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+/* ===== 6. 학교별 식단 카드 (학교급별 테두리 및 순수 요리명) ===== */
+.dish-clean-card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dish-clean-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* 학교급별 테두리 색상 규격 */
+.border-yellow {
+  border: 2.5px solid #eab308 !important;
+}
+
+.border-blue {
+  border: 2.5px solid #2563eb !important;
+}
+
+.border-red {
+  border: 2.5px solid #ef4444 !important;
+}
+
+.border-gray {
+  border: 2px solid #cbd5e1 !important;
+}
+
+.dish-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.dish-title-wrapper {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.dish-school-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+/* 상단 고정 핀 버튼 */
+.btn-pin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-pin:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+}
+
+.btn-pin.pinned {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #4f46e5;
+}
+
+.btn-pin.pinned .pin-icon {
+  fill: #4f46e5;
+  transform: rotate(45deg);
+}
+
+.pin-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  transition: transform 0.2s ease, fill 0.2s ease, color 0.2s ease;
+}
+
+/* 상단 고정 카드 및 배지 스타일 */
+.dish-clean-card.is-pinned {
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.12);
+  background: #ffffff;
+  position: relative;
+}
+
+.pinned-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.675rem;
+  font-weight: 700;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.3rem;
+  line-height: 1.2;
+}
+
+.pure-dishes-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.pure-dishes-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.pure-dish-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #f8fafc;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  padding: 0.25rem 0.55rem;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* ===== 7. 푸터 ===== */
+.app-footer {
+  margin-top: auto;
+  border-top: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1240px;
+  margin: 0 auto;
+}
